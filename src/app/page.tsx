@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Filter, Plus, Search, LogOut } from "lucide-react";
 import { useTickets } from "@/hooks/use-tickets";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useAuth } from "@/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,12 +31,7 @@ export default function TicketsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
-  };
+  const { logout } = useAuth();
 
   const debouncedSearch = useDebounce(search, 300);
   const { scrollY } = useScroll();
@@ -79,7 +75,7 @@ export default function TicketsPage() {
               New Ticket
             </Button>
           </Link>
-          <Button variant="outline" onClick={handleLogout}>
+          <Button variant="outline" onClick={logout}>
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>
