@@ -40,7 +40,25 @@ export default function NewTicketPage() {
 
   const onSubmit = async (data: TicketFormData) => {
     try {
-      const ticket = await createTicket.mutateAsync(data);
+      // Transform assignee IDs to full user objects
+      let assignees: Array<{ _id: string; name: string; email: string }> | undefined;
+      
+      if (data.assignees && data.assignees.length > 0) {
+        // Fetch user details for the selected assignee IDs
+        const userResponse = await fetch('/api/users');
+        const users = await userResponse.json();
+        assignees = users.filter((user: any) => data.assignees!.includes(user._id));
+      }
+
+      const ticketData = {
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        priority: data.priority,
+        assignees,
+      };
+
+      const ticket = await createTicket.mutateAsync(ticketData);
 
       toast.success("Ticket created successfully");
       router.push(`/tickets/${ticket._id}`);
