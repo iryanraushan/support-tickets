@@ -34,7 +34,7 @@ export interface TicketFilters {
 
 const API_BASE = "/api/tickets";
 
-const getAuthHeaders = () => {
+const getAuthHeaders = (): Record<string, string> => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
