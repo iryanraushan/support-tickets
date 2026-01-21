@@ -45,21 +45,12 @@ export function EditTicketModal({ ticket, onClose }: EditTicketModalProps) {
 
   const onSubmit = async (data: TicketFormData) => {
     try {
-      // Transform assignee IDs to full user objects
-      let assignees: Array<{ _id: string; name: string; email: string }> | undefined;
-      
-      if (data.assignees && data.assignees.length > 0) {
-        const userResponse = await fetch('/api/users');
-        const users = await userResponse.json();
-        assignees = users.filter((user: any) => data.assignees!.includes(user._id));
-      }
-
       const updateData = {
         title: data.title,
         description: data.description,
         status: data.status,
         priority: data.priority,
-        assignees,
+        assignees: data.assignees,
       };
 
       await updateTicket.mutateAsync({

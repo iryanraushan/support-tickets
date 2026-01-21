@@ -6,6 +6,7 @@ import { Ticket } from "@/models/Ticket";
 import { User } from "@/models/User";
 import { TicketSchema } from "@/features/auth/schemas/ticket.schema";
 import { sendEmail, createAssignmentEmail } from "@/lib/email";
+import { verifyToken } from "@/lib/jwt";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connectDB();
@@ -25,18 +26,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
 
     const body = await req.json();
+    
+    if (body.assignees && Array.isArray(body.assignees)) {
+      body.assignees = body.assignees.map((assignee: any) => 
+        typeof assignee === 'string' ? assignee : assignee._id
+      );
+    }
+    
     const parsed = TicketSchema.partial().safeParse(body);
 
     if (!parsed.success) {
       return Response.json(
-        { errors: parsed.error.flatten() },
+        { message: "Validation failed", errors: parsed.error.flatten() },
         { status: 400 }
       );
     }
 
     const oldTicket = await Ticket.findById(id).populate("assignees");
     if (!oldTicket) {
-      return Response.json({ message: "Not found" }, { status: 404 });
+      return Response.json({ message: "Ticket not found" }, { status: 404 });
     }
 
     const ticket = await Ticket.findByIdAndUpdate(
@@ -45,7 +53,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       { new: true }
     ).populate("assignees");
 
-    // Send email notifications for assignee changes
     if (parsed.data.assignees) {
       const oldAssigneeIds = oldTicket.assignees?.map((a: any) => a._id.toString()) || [];
       const newAssigneeIds = parsed.data.assignees;
@@ -78,14 +85,27 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
     const { id } = await params;
+    
+    const token = req.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return Response.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const decoded = verifyToken(token) as any;
+    const user = await User.findById(decoded.userId);
+    
+    if (!user || user.role !== "admin") {
+      return Response.json({ message: "Only admins can delete tickets" }, { status: 403 });
+    }
+    
     const ticket = await Ticket.findByIdAndDelete(id);
     
     if (!ticket) {
-      return Response.json({ message: "Not found" }, { status: 404 });
+      return Response.json({ message: "Ticket not found" }, { status: 404 });
     }
     
     return Response.json({ success: true });

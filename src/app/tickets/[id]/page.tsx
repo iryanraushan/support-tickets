@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Pencil, Trash2, InfoIcon } from "lucide-react";
 
 import { useTicket, useDeleteTicket } from "@/hooks/use-tickets";
+import { useAuth } from "@/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ export default function TicketDetailsPage({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const router = useRouter();
   const { id } = use(params);
+  const { user } = useAuth();
 
   const { data: ticket, isLoading, isError } = useTicket(id);
   const deleteTicket = useDeleteTicket();
@@ -34,7 +36,7 @@ export default function TicketDetailsPage({
   const handleDelete = async () => {
     await deleteTicket.mutateAsync(id);
     setShowDeleteModal(false);
-    router.push("/");
+    router.push("/tickets");
   };
 
   if (isLoading) {
@@ -50,7 +52,7 @@ export default function TicketDetailsPage({
     return (
       <div className="max-w-5xl mx-auto px-6 py-8 text-center">
         <p className="text-red-500 mb-4">Ticket not found</p>
-        <Button onClick={() => router.push("/")}>Back to Tickets</Button>
+        <Button onClick={() => router.push("/tickets")}>Back to Tickets</Button>
       </div>
     );
   }
@@ -61,7 +63,7 @@ export default function TicketDetailsPage({
       <div className="flex items-center gap-2 text-lg font-semibold">
         <ArrowLeft
           className="h-5 w-5 cursor-pointer"
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/tickets")}
         />
         Ticket Details
       </div>
@@ -79,14 +81,16 @@ export default function TicketDetailsPage({
               <Pencil className="h-4 w-4" />
             </Button>
 
-            <Button
-              size="icon"
-              variant="outline"
-              className="rounded-lg h-9 w-9 text-red-500"
-              onClick={() => setShowDeleteModal(true)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {user?.role === "admin" && (
+              <Button
+                size="icon"
+                variant="outline"
+                className="rounded-lg h-9 w-9 text-red-500"
+                onClick={() => setShowDeleteModal(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
           {/* Title + Status */}

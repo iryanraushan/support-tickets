@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
+import { useAuth } from "@/providers/auth-provider";
 
 import { LoginSchema } from "@/features/auth/schemas/auth.schema";
 
@@ -19,7 +19,7 @@ type LoginFormData = z.infer<typeof LoginSchema>;
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const { login } = useAuth();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
@@ -44,8 +44,7 @@ export default function LoginPage() {
         return;
       }
       const result = await res.json();
-      localStorage.setItem("token", result.token);
-      router.push("/");
+      login(result.token);
     } catch (err) {
       setError("Something went wrong");
     } finally {
@@ -65,11 +64,11 @@ export default function LoginPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
+              <Input
+                id="email"
                 type="email"
                 placeholder="Enter your email"
-                {...form.register("email")} 
+                {...form.register("email")}
                 className="mt-1"
               />
               {form.formState.errors.email && (
@@ -109,7 +108,10 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link href="/signup" className="text-blue-600 hover:underline font-medium">
+              <Link
+                href="/signup"
+                className="text-blue-600 hover:underline font-medium"
+              >
                 Sign up
               </Link>
             </p>

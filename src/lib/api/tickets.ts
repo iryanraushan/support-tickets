@@ -9,6 +9,14 @@ export interface Ticket {
   updatedAt: string;
 }
 
+export interface TicketUpdateData {
+  title?: string;
+  description?: string;
+  status?: "open" | "in_progress" | "closed";
+  priority?: number;
+  assignees?: string[];
+}
+
 export interface TicketsResponse {
   tickets: Ticket[];
   hasMore: boolean;
@@ -25,6 +33,11 @@ export interface TicketFilters {
 }
 
 const API_BASE = "/api/tickets";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const ticketApi = {
   getTickets: async (filters: TicketFilters = {}): Promise<TicketsResponse> => {
@@ -54,7 +67,7 @@ export const ticketApi = {
     return response.json();
   },
 
-  updateTicket: async (id: string, data: Partial<Ticket>): Promise<Ticket> => {
+  updateTicket: async (id: string, data: TicketUpdateData): Promise<Ticket> => {
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -67,6 +80,7 @@ export const ticketApi = {
   deleteTicket: async (id: string): Promise<void> => {
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error("Failed to delete ticket");
   },

@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ticketApi, type Ticket, type TicketFilters } from "@/lib/api/tickets";
+import { ticketApi, type Ticket, type TicketFilters, type TicketUpdateData } from "@/lib/api/tickets";
 
 export const useTickets = (filters: TicketFilters) => {
   return useInfiniteQuery({
@@ -35,7 +35,7 @@ export const useUpdateTicket = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Ticket> }) =>
+    mutationFn: ({ id, data }: { id: string; data: TicketUpdateData }) =>
       ticketApi.updateTicket(id, data),
     onSuccess: (updatedTicket) => {
       queryClient.setQueryData(["ticket", updatedTicket._id], updatedTicket);
