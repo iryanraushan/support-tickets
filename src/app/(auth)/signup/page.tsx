@@ -72,7 +72,6 @@ export default function SignupPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <p className="text-muted-foreground">Join our support system</p>
         </CardHeader>
 
         <CardContent>
