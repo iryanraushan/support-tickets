@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
 
   const publicRoutes = ['/login', '/signup'];
   const isPublicRoute = publicRoutes.includes(pathname);
-
+  console.log('ticket is this ', token)
   if (!token && !isPublicRoute) {
     console.log('[Middleware] Redirecting to login - no token');
     return NextResponse.redirect(new URL('/login', request.url));
