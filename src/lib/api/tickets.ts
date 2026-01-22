@@ -46,13 +46,17 @@ export const ticketApi = {
       if (value !== undefined) params.append(key, String(value));
     });
     
-    const response = await fetch(`${API_BASE}?${params}`);
+    const response = await fetch(`${API_BASE}?${params}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error("Failed to fetch tickets");
     return response.json();
   },
 
   getTicket: async (id: string): Promise<Ticket> => {
-    const response = await fetch(`${API_BASE}/${id}`);
+    const response = await fetch(`${API_BASE}/${id}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error("Failed to fetch ticket");
     return response.json();
   },
@@ -60,7 +64,10 @@ export const ticketApi = {
   createTicket: async (data: Omit<Ticket, "_id" | "createdAt" | "updatedAt">): Promise<Ticket> => {
     const response = await fetch(API_BASE, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error("Failed to create ticket");
@@ -70,7 +77,10 @@ export const ticketApi = {
   updateTicket: async (id: string, data: TicketUpdateData): Promise<Ticket> => {
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error("Failed to update ticket");
