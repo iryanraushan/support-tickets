@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (token && isPublicRoute) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/tickets', request.url));
   }
 
   const response = NextResponse.next();
